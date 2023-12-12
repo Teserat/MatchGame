@@ -24,24 +24,46 @@ namespace MatchGame
         DispatcherTimer timer = new DispatcherTimer();
         int tenthsOfSecondsElapsed;
         int matchesFound;
+        string bestTime;
+        decimal previousTime;
+        decimal newTime;
+        bool check = false;
+
         public MainWindow()
         {
             InitializeComponent();
-
+            bestScoreBlock.Visibility = Visibility.Hidden;
             timer.Interval = TimeSpan.FromSeconds(.1);
             timer.Tick += Timer_Tick;
             SetUpGame();
+
         }
 
         private void Timer_Tick(object sender, EventArgs e)
         {
             tenthsOfSecondsElapsed ++;
             timeTextBlock.Text = (tenthsOfSecondsElapsed / 10F).ToString("0.0s");
+            newTime = ((decimal)(tenthsOfSecondsElapsed / 10F));
+
             if (matchesFound == 8)
             {
                 timer.Stop();
-                timeTextBlock.Text = timeTextBlock.Text + " - One more time?";
+                if (bestTime == null)
+                {
+                    bestTime = timeTextBlock.Text;
+                    previousTime = newTime;
+                }
+                else if  (newTime < previousTime )
+                {
+                    bestTime = timeTextBlock.Text;
+                    bestScoreBlock.Text = null;
+                    bestScoreBlock.Text = "Best time" + "\n" + bestTime;
+                }
+                
+                timeTextBlock.Text = timeTextBlock.Text + " - Again?";
+                previousTime = newTime;
             }
+            
         }
 
         private void SetUpGame()
@@ -61,7 +83,7 @@ namespace MatchGame
             Random random = new Random();
             foreach (TextBlock textBlock in mainGrid.Children.OfType<TextBlock>())
             {
-                if(textBlock.Name != "timeTextBlock")
+                if(textBlock.Name != "timeTextBlock" && textBlock.Name != "bestScoreBlock")
                 {
                     textBlock.Visibility = Visibility.Visible;
                     int index = random.Next(animalEmoji.Count);
@@ -74,6 +96,12 @@ namespace MatchGame
             timer.Start();
             tenthsOfSecondsElapsed = 0;
             matchesFound = 0;
+            if (bestTime != null && check == false)
+            {
+                bestScoreBlock.Visibility = Visibility.Visible;
+                bestScoreBlock.Text = bestScoreBlock.Text + "\n" + bestTime;
+                check = true;
+            }
 
         }
         TextBlock lastTextBlockClicked;
